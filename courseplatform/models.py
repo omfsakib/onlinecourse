@@ -27,15 +27,63 @@ class User(AbstractUser):
 
 
 class Course(BaseModel):
-    name = models.CharField(max_length=200)
-    description = models.TextField()
-    start_date = models.DateField()
-    end_date = models.DateField()
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='taught_courses',limit_choices_to={'role': 'teacher'})
-    students = models.ManyToManyField(User, blank=True, related_name='enrolled_courses', limit_choices_to={'role': 'student'})
+    _name = models.CharField(max_length=200)
+    _description = models.TextField()
+    _start_date = models.DateField()
+    _end_date = models.DateField()
+    _teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='taught_courses',limit_choices_to={'role': 'teacher'})
+    _students = models.ManyToManyField(User, blank=True, related_name='enrolled_courses', limit_choices_to={'role': 'student'})
 
     def __str__(self):
-        return self.name
+        return self._name
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, value):
+        self._description = value
+
+    @property
+    def start_date(self):
+        return self._start_date
+
+    @start_date.setter
+    def start_date(self, value):
+        self._start_date = value
+
+    @property
+    def end_date(self):
+        return self._end_date
+
+    @end_date.setter
+    def end_date(self, value):
+        self._end_date = value
+
+    @property
+    def teacher(self):
+        return self._teacher
+
+    @teacher.setter
+    def teacher(self, value):
+        self._teacher = value
+
+    @property
+    def students(self):
+        return self._students
+
+    @students.setter
+    def students(self, value):
+        self._students = value
 
 class Lesson(BaseModel):
     title = models.CharField(max_length=255)

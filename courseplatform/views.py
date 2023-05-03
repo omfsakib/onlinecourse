@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import *
 from .forms import *
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
 # Public Views
@@ -26,11 +27,20 @@ def signup(request):
     }
     return render(request, 'registration/signup_form.html',context)
 
-    
-class CourseListView(ListView):
+
+
+class CourseListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = Course
     template_name = 'course_list.html'
     context_object_name = 'courses'
+    permission_required = ('courses.view_private_course',)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if not self.request.user.has_perm('courses.view_private_course'):
+            qs = qs.filter(is_private=False)
+        return qs
+    
 
 
 class CourseDetailView(DetailView):
