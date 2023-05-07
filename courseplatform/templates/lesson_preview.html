@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ lesson.course.name }} - {{ lesson.title }}</title>
+</head>
+<body>
+	<h1>{{ lesson.course.name }}</h1>
+	<h2>{{ lesson.title }}</h2>
+	<p>{{ lesson.description }}</p>
+    
+    {% if total_quizes > 0 %}
+    <h2>There are {{total_quizes}} waiting for you to complete.</h2>
+    <ul>
+        {% for quiz in quizes %}
+        <li>
+            <h3>{{quiz.title}}</h3>
+            <p>{{quiz.description}}</p>
+            <a href="{% url 'courseplatform:start_quiz' quiz.id %}">
+                <button>Start</button>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <h2>There are no waiting quizes.</h2>
+    {% endif %}
+</body>
+</html>

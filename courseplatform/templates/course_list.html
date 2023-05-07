@@ -7,7 +7,7 @@
   <h1>Course List</h1>
   <ul>
     {% for course in courses %}
-      <li><a href="#">{{ course.name }}</a></li>
+      <li><a href="{% url 'courseplatform:course_detail' course.id %}">{{ course.name }}</a></li>
     {% empty %}
       <li>No courses found.</li>
     {% endfor %}

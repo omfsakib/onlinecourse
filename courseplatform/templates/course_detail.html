@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{course.name}} || Course Platform</title>
+</head>
+<body>
+	<h1>{{course.name}}</h1>
+	<p>{{course.description}}</p>
+	<p><strong>Start Date:</strong> {{course.start_date}}</p>
+	<p><strong>End Date:</strong> {{course.end_date}}</p>
+	<p><strong>Teacher:</strong> {{course.teacher.first_name}} {{course.teacher.last_name}}</p>
+	<p><strong>Total Enrolled Students:</strong> {{total_entrollment}}</p>
+    {% if total_lessons > 0 %}
+	<h2>Lessons Included: {{total_lessons}}</h2>
+	<ul>
+		{% for lesson in lessons %}
+        <li><a href="{% url 'courseplatform:lesson_preview' lesson.id %}">{{lesson.title}}</a></li>
+        {% endfor %}
+	</ul>
+    {% else %}
+    <h2>No Lessons Included</h2>
+    {% endif %}
+	<h2>You will face {{total_quiz}} quizes by completing this lessons</h2>
+</body>
+</html>

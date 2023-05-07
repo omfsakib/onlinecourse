@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Answer </title>
+</head>
+<body>
+    {% for answers in answers %}
+    <p> {{ answers.question.text }} </p>
+    <p>{{ answers.text }}</p>
+    <form method = "POST">
+        {% csrf_token %}
+        <input type="hidden" name="answer_id" value="{{ answers.id }}">
+        <input type="submit" value="Check">
+    {% endfor %}
+    {{is_correct}}
+</body>
+</html>

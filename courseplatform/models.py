@@ -8,7 +8,12 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-    
+        
+class Address(BaseModel):
+    detail_address = models.TextField(max_length=2000, blank=True, null=True)
+    state = models.CharField(max_length=20, blank=True, null=True)
+    city = models.CharField(max_length=20, blank=True, null=True)
+    zip = models.CharField(max_length=20, blank=True, null=True)
 
 
 class User(AbstractUser):
@@ -24,6 +29,16 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+class UserProfile(Address):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone_number = models.CharField(max_length=20)
+    dob = models.DateField()
+    gender = models.CharField(max_length=10)
+    profile_pic = models.ImageField(upload_to='profile_pics', blank=True)
+
+    def __str__(self):
+        return self.user.username
 
 
 class Course(BaseModel):
@@ -101,12 +116,34 @@ class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField()
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.title
 
 class Question(BaseModel):
     text = models.TextField()
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    
+        
+    def __str__(self):
+        return self.text
 
 class Answer(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     text = models.TextField()
     is_correct = models.BooleanField(default=False)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    
+    @staticmethod
+    def is_correct_answer(id):
+        try:
+            answer = Answer.objects.get(id=id)
+            if answer.is_correct:
+                return True
+            else:
+                return False
+        except Answer.DoesNotExist:
+            return False
+    
+    def __str__(self):
+        return self.question.text

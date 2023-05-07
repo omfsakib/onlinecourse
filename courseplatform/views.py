@@ -1,11 +1,14 @@
 from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy,reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import *
 from .forms import *
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib import messages
 
 
 # Public Views
@@ -28,6 +31,21 @@ def signup(request):
     return render(request, 'registration/signup_form.html',context)
 
 
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('courseplatform:course_list')
+        else:
+            # Return an error message if authentication fails
+            error_message = "Invalid username or password. Please try again."
+            return render(request, 'registration/login.html', {'error_message': error_message})
+    else:
+        return render(request, 'registration/login.html')
+
 
 class CourseListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = Course
@@ -40,19 +58,83 @@ class CourseListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         if not self.request.user.has_perm('courses.view_private_course'):
             qs = qs.filter(is_private=False)
         return qs
+
+def CourseDetailView(request,pk):
+    course = get_object_or_404(Course, pk=pk)
+    total_entrollment = course.students.all().count()
     
+    lessons = Lesson.objects.filter(course = course)
+    total_lessons = lessons.count()
+    
+    total_quiz = 0
+    for i in lessons:
+        total_quiz += Quiz.objects.filter(lesson=i).count()
+
+    
+    context = {
+        'course' : course,
+        'total_entrollment':total_entrollment,
+        'lessons':lessons,
+        'total_lessons':total_lessons,
+        'total_quiz' :total_quiz
+    }
+    return render(request,'course_detail.html',context)
+
+def LessonsPreview(request,pk):
+    lesson = get_object_or_404(Lesson, pk=pk)
+    quizes = Quiz.objects.filter(lesson = lesson)
+    total_quizes = quizes.count()    
+    
+    # print(total_quizes)
+    
+    context = {
+        'lesson' : lesson,
+        'quizes' :quizes,
+        'total_quizes': total_quizes
+    }
+    return render(request,'lesson_preview.html',context)
 
 
-class CourseDetailView(DetailView):
-    model = Course
-    template_name = 'course_detail.html'
+def StartQuiz(request,pk):
+    quiz = get_object_or_404(Quiz, pk =pk)
+    questions = Question.objects.filter(quiz = quiz)
+    
+    if request.method == "POST" and 'question_id' in request.POST:
+        question_id = request.POST.get('question_id')
+        question = Question.objects.get(id = question_id)
+        answer = request.POST.get('answer')
+        answer_obj = Answer.objects.create(user = request.user, question = question)
+        answer_obj.text = answer
+        answer_obj.save()
+        
+        return redirect('courseplatform:answers')
+        
+        
+    context = {
+        'quiz' : quiz,
+        'questions' :questions,
+    }
+    return render(request,'quiz_start.html',context)
 
 
-class LessonDetailView(DetailView):
-    model = Lesson
-    template_name = 'lesson_detail.html'
-
-
+def SeeAnswers(request):
+    user = request.user
+    answers =  Answer.objects.filter(user = user)
+    
+    if request.method == "POST" and 'answer_id' in request.POST:
+        answer_id = request.POST.get('answer_id')
+        is_correct = Answer.is_correct_answer(answer_id)
+        print(is_correct)
+        
+        context = {
+            'is_correct' : is_correct,
+            'answers':answers
+        }
+    else:
+        context = {
+            'answers':answers
+        }
+    return render(request,'answers.html',context)
 # Student Views
 
 @login_required
@@ -107,3 +189,5 @@ class LessonDeleteView(DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('course_detail', kwargs={'pk': self.object.course.pk})
+
+

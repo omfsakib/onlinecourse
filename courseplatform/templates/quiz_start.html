@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ quiz.title }} </title>
+</head>
+<body>
+	<h1>{{ quiz.name }}</h1>
+    {% for question in questions %}
+    <form method = 'POST'>
+        {% csrf_token %}
+        <p>{{ question.text }}</p>
+        <label for="answer">Your Answer:</label>
+        <input type="hidden" name="question_id" value={{question.id}}>
+        <textarea name="answer" id="answer"></textarea>
+        <input type="submit" value="Submit">
+	</form>
+    {% endfor %}
+</body>
+</html>
