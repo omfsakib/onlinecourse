@@ -9,13 +9,15 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib import messages
+import bcrypt
+from django.contrib.auth.hashers import check_password,make_password
+
 
 
 # Public Views
 def signup(request):
     form = SignUpForm()
     if request.method == 'POST':
-        print('Working')
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -35,12 +37,13 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        print(make_password('sakib123'))
+        print(check_password('sakib123','bcrypt_sha256$$2b$12$mroDKxccPIfr.C99T2v9SOMINYsGu0P8/a5Gs07M0KJk0aZ.bYx5S'))
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return redirect('courseplatform:course_list')
         else:
-            # Return an error message if authentication fails
             error_message = "Invalid username or password. Please try again."
             return render(request, 'registration/login.html', {'error_message': error_message})
     else:
@@ -124,7 +127,6 @@ def SeeAnswers(request):
     if request.method == "POST" and 'answer_id' in request.POST:
         answer_id = request.POST.get('answer_id')
         is_correct = Answer.is_correct_answer(answer_id)
-        print(is_correct)
         
         context = {
             'is_correct' : is_correct,
